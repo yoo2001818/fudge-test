@@ -30,7 +30,7 @@ module.exports = {
       {
         test: /\.js$/i,
         exclude: /node_modules/,
-        loaders: 'babel'
+        loader: 'babel'
         // loaders: ['react-hot', 'babel']
       },
       {
@@ -51,6 +51,7 @@ module.exports = {
       },
       {
         test: /(\.vert|\.frag|\.obj|\.mtl)$/i,
+        exclude: /node_modules/,
         loader: 'raw'
       },
       {
