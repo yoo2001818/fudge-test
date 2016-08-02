@@ -25,6 +25,7 @@ export default class WebGLSystem {
         this.materials[entity.mesh.material]
       );
       vec3.copy(mesh.transform.position, entity.transform.position);
+      vec3.copy(mesh.transform.scale, entity.transform.scale);
       mesh.transform.invalidate();
       this.container.appendChild(mesh);
       this.meshMap[entity.id] = mesh;

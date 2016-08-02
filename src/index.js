@@ -10,7 +10,7 @@ import BoxGeometry from 'webglue/lib/geom/boxGeometry';
 import QuadGeometry from 'webglue/lib/geom/quadGeometry';
 
 import CanvasRenderContext from 'webglue/lib/contrib/canvasRenderContext';
-import FPSCameraController from 'webglue/lib/contrib/controller/fps';
+import CameraController from './util/cameraController';
 
 import { vec3 } from 'gl-matrix';
 
@@ -19,8 +19,9 @@ let { container, camera } = createScene();
 let context = new CanvasRenderContext();
 context.mainScene.camera = camera;
 
-let controller = new FPSCameraController(context.canvas, window, camera);
+let controller = new CameraController(window, window, camera);
 controller.registerEvents();
+controller.reset();
 
 let engine = new Engine({
   mesh, transform, test: {
@@ -42,22 +43,36 @@ let engine = new Engine({
     })
   }),
   test: function TestSystem (engine) {
+    this.timer = 0;
     this.entities = engine.systems.family.get('test', 'transform').entities;
     this.hooks = {
       'external.start': () => {
-        engine.actions.entity.create({
-          transform: {
-            position: vec3.fromValues(0, 0, 0)
-          },
-          mesh: {
-            geometry: 'cube'
-          },
-          test: {
-            velocity: vec3.fromValues(0, 10, 0)
+        for (let x = -5; x <= 5; ++x) {
+          for (let z = -5; z <= 5; ++z) {
+            engine.actions.entity.create({
+              transform: {
+                position: vec3.fromValues(x, 0, z),
+                scale: vec3.fromValues(0.5, 0.5, 0.5)
+              },
+              mesh: {
+                geometry: 'cube'
+              },
+              test: {
+              }
+            });
           }
-        });
+        }
       },
       'external.update': (delta) => {
+        this.timer += delta;
+        this.entities.forEach(entity => {
+          let x = entity.transform.position[0];
+          let z = entity.transform.position[2];
+          let y = Math.sin((x + z) / 5 + this.timer) * 4;
+          let tmp = vec3.fromValues(x, y, z);
+          engine.actions.transform.setPos(entity, tmp);
+        });
+        /*
         let deltaVal = vec3.fromValues(0, -9.8 * delta, 0);
         this.entities.forEach(entity => {
           let tmp = vec3.create();
@@ -66,14 +81,15 @@ let engine = new Engine({
             deltaVal);
           engine.actions.transform.addPos(entity, tmp);
         });
-      },
-      'transform.setPos:pre': (entity, pos) => {
+        */
+      }
+      /*'transform.setPos:pre': (entity, pos) => {
         pos[1] = Math.max(pos[1], 0);
         if (pos[1] <= 0 && entity.test) {
           entity.test.velocity[1] = Math.max(entity.test.velocity[1], 0);
         }
         return [entity, pos];
-      }
+      }*/
     };
   }
 });
